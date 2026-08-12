@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: mall-customer-segmentation
+    runtime: python
+
+    # Only app.py, templates/, requirements.txt, model.pkl, and
+    # cluster_data.pkl are needed on the Render instance.
+    # Mall_Customers.csv / notebook files should be excluded via
+    # .gitignore and are never pushed to GitHub, so they never
+    # reach this build.
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+
+    startCommand: gunicorn --workers 1 --timeout 60 app:app
+
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9

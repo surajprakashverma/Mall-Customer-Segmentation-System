@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mall Customer Segmentation System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Emoji favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛍️</text></svg>">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", "Segoe UI", sans-serif;
+        }
+
+        html, body { height: 100%; }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fff3b0, #ffb3c6, #caffbf, #bde0fe, #ffc8dd);
+            background-size: 450% 450%;
+            animation: gradientMove 12s ease infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 22px;
+            position: relative;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .floating-shape {
+            position: fixed;
+            border-radius: 50%;
+            opacity: 0.45;
+            z-index: 0;
+            filter: blur(1px);
+            animation: floatShape 8s ease-in-out infinite;
+        }
+
+        .shape1 { width: 120px; height: 120px; background: #ff6b6b; top: 7%; left: 7%; }
+        .shape2 { width: 170px; height: 170px; background: #ffd166; bottom: 6%; right: 8%; animation-delay: 2s; }
+        .shape3 { width: 90px; height: 90px; background: #06d6a0; bottom: 15%; left: 16%; animation-delay: 4s; }
+        .shape4 { width: 75px; height: 75px; background: #ff85a1; top: 18%; right: 18%; animation-delay: 1.3s; }
+
+        @keyframes floatShape {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-32px) scale(1.1); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 1100px;
+            display: grid;
+            grid-template-columns: 1fr 1.1fr;
+            gap: 28px;
+            align-items: start;
+        }
+
+        .left-panel, .right-panel {
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(22px);
+            border-radius: 32px;
+            padding: 32px;
+            box-shadow: 0 25px 70px rgba(255, 87, 127, 0.25);
+            border: 2px solid rgba(255, 255, 255, 0.75);
+            animation: slideUp 0.85s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(35px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .left-panel { position: sticky; top: 22px; }
+
+        .badge {
+            width: fit-content;
+            padding: 9px 18px;
+            border-radius: 50px;
+            background: linear-gradient(135deg, #ff7eb3, #ff758c);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 800;
+            margin-bottom: 18px;
+            box-shadow: 0 8px 20px rgba(255, 117, 140, 0.35);
+        }
+
+        h1 {
+            font-size: 38px;
+            line-height: 1.13;
+            color: #2d1b3d;
+            margin-bottom: 18px;
+        }
+
+        h1 span {
+            background: linear-gradient(135deg, #ff4d6d, #8e44ad, #00b894);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: #5f4b66;
+            font-size: 16px;
+            line-height: 1.7;
+            margin-bottom: 24px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 13px;
+            margin-top: 10px;
+        }
+
+        .feature {
+            background: rgba(255, 255, 255, 0.76);
+            padding: 14px 15px;
+            border-radius: 18px;
+            color: #3f2b50;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+            transition: 0.3s ease;
+        }
+
+        .feature:hover { transform: translateY(-4px); background: #ffffff; }
+
+        .upload-title { font-size: 28px; color: #2d1b3d; margin-bottom: 8px; text-align: center; }
+
+        .upload-info {
+            text-align: center;
+            color: #6a5873;
+            margin-bottom: 22px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .form-group { margin-bottom: 18px; }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: #3f2b50;
+            font-size: 14px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 16px;
+            border: 2px solid #ffd0e0;
+            font-size: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            transition: 0.3s ease;
+            font-family: inherit;
+            color: #2d1b3d;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #ff7eb3;
+            box-shadow: 0 0 0 4px rgba(255, 126, 179, 0.15);
+        }
+
+        .predict-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 16px;
+            border: none;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #06d6a0, #00b4d8);
+            color: white;
+            font-size: 17px;
+            font-weight: 900;
+            cursor: pointer;
+            letter-spacing: 0.4px;
+            transition: 0.35s ease;
+            box-shadow: 0 14px 30px rgba(6, 214, 160, 0.35);
+        }
+
+        .predict-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 180, 216, 0.4);
+        }
+
+        .predict-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error {
+            margin-top: 18px;
+            padding: 13px 17px;
+            background: #ffe3e3;
+            color: #d00000;
+            border-radius: 16px;
+            font-weight: 800;
+            text-align: center;
+        }
+
+        .note {
+            margin-top: 17px;
+            font-size: 12.5px;
+            color: #6a5873;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .loader {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.5);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* MODAL */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(25, 10, 35, 0.58);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            animation: fadeIn 0.4s ease;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .modal-content {
+            width: 100%;
+            max-width: 620px;
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 32px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 35px 90px rgba(0, 0, 0, 0.28);
+            border: 2px solid rgba(255, 255, 255, 0.85);
+            animation: popup 0.5s ease;
+            margin: auto;
+        }
+
+        @keyframes popup {
+            from { transform: scale(0.75) translateY(30px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .popup-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 50px;
+            background: linear-gradient(135deg, #ff758c, #ff7eb3);
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 800;
+            margin-bottom: 14px;
+        }
+
+        .popup-emoji {
+            font-size: 50px;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .popup-cluster {
+            font-size: 26px;
+            font-weight: 900;
+            color: #2d1b3d;
+            margin-bottom: 6px;
+        }
+
+        .popup-label {
+            font-size: 16px;
+            font-weight: 800;
+            color: #7b2cbf;
+            background: #f8edff;
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 50px;
+            margin-bottom: 14px;
+        }
+
+        .popup-description {
+            font-size: 14px;
+            color: #5f4b66;
+            line-height: 1.6;
+            margin-bottom: 18px;
+        }
+
+        .popup-plot {
+            width: 100%;
+            border-radius: 20px;
+            box-shadow: 0 16px 35px rgba(0, 0, 0, 0.16);
+            margin-bottom: 16px;
+        }
+
+        .question {
+            margin-top: 8px;
+            color: #3f2b50;
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        .popup-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+
+        .new-btn, .back-btn {
+            padding: 14px 24px;
+            border-radius: 16px;
+            font-weight: 900;
+            transition: 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .new-btn {
+            background: linear-gradient(135deg, #06d6a0, #00b4d8);
+            color: white;
+            box-shadow: 0 12px 25px rgba(6, 214, 160, 0.35);
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #ff758c, #ff7eb3);
+            color: white;
+            box-shadow: 0 12px 25px rgba(255, 117, 140, 0.35);
+        }
+
+        .new-btn:hover, .back-btn:hover { transform: translateY(-4px); }
+
+        .hidden { display: none !important; }
+
+        @media (max-width: 950px) {
+            .container { grid-template-columns: 1fr; gap: 18px; }
+            .left-panel { position: static; }
+            h1 { font-size: 30px; text-align: center; }
+            .badge { margin-left: auto; margin-right: auto; }
+            .subtitle { text-align: center; font-size: 14px; }
+        }
+
+        @media (max-width: 560px) {
+            body { padding: 12px; }
+            .left-panel, .right-panel { padding: 20px; border-radius: 24px; }
+            h1 { font-size: 24px; }
+            .modal-content { padding: 20px; border-radius: 24px; }
+            .popup-buttons { flex-direction: column; }
+            .new-btn, .back-btn { width: 100%; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="floating-shape shape1"></div>
+    <div class="floating-shape shape2"></div>
+    <div class="floating-shape shape3"></div>
+    <div class="floating-shape shape4"></div>
+
+    <div class="container">
+
+        <div class="left-panel">
+            <div class="badge">AI Customer Segmentation</div>
+
+            <h1>Mall Customer <span>Segmentation System</span></h1>
+
+            <p class="subtitle">
+                A K-Means clustering model that groups mall customers into
+                {{ n_clusters }} distinct segments based on Annual Income and Spending Score,
+                helping identify which type of customer a new shopper resembles.
+            </p>
+
+            <div class="features">
+                <div class="feature">🎯 K-Means Clustering ({{ n_clusters }} Segments)</div>
+                <div class="feature">📊 Visual Cluster Plot</div>
+                <div class="feature">💡 Business-Friendly Segment Labels</div>
+                <div class="feature">🎨 Animated One Page UI</div>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <h2 class="upload-title">Enter Customer Details</h2>
+            <p class="upload-info">Enter Annual Income and Spending Score to find the customer's segment</p>
+
+            <form id="predictForm">
+                <div class="form-group">
+                    <label for="Annual_Income">Annual Income (k$)</label>
+                    <input type="number" step="0.1" min="0" id="Annual_Income" name="Annual_Income"
+                           placeholder="e.g. 60" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="Spending_Score">Spending Score (1–100)</label>
+                    <input type="number" step="0.1" min="0" max="100" id="Spending_Score" name="Spending_Score"
+                           placeholder="e.g. 50" required>
+                </div>
+
+                <button type="submit" class="predict-btn" id="predictBtn">Find Segment 🎯</button>
+            </form>
+
+            <div class="error hidden" id="errorBox"></div>
+
+            <p class="note">
+                Note: Segments are determined by a K-Means model trained on 200 mall customers.
+            </p>
+        </div>
+
+    </div>
+
+    <!-- RESULT MODAL -->
+    <div class="modal hidden" id="resultModal">
+        <div class="modal-content">
+
+            <div class="popup-badge">Segment Identified</div>
+
+            <div class="popup-emoji">🛍️</div>
+
+            <div class="popup-cluster" id="popupCluster">Cluster -</div>
+            <div class="popup-label" id="popupLabel">-</div>
+            <div class="popup-description" id="popupDescription">-</div>
+
+            <img id="popupPlot" class="popup-plot" alt="Cluster visualization">
+
+            <div class="question">
+                Do you want to check another customer, or go back?
+            </div>
+
+            <div class="popup-buttons">
+                <button class="new-btn" id="newPredictionBtn">🔄 New Prediction</button>
+                <button class="back-btn" id="goBackBtn">⬅ Go Back</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById("predictForm");
+        const predictBtn = document.getElementById("predictBtn");
+        const errorBox = document.getElementById("errorBox");
+
+        const resultModal = document.getElementById("resultModal");
+        const popupCluster = document.getElementById("popupCluster");
+        const popupLabel = document.getElementById("popupLabel");
+        const popupDescription = document.getElementById("popupDescription");
+        const popupPlot = document.getElementById("popupPlot");
+
+        const newPredictionBtn = document.getElementById("newPredictionBtn");
+        const goBackBtn = document.getElementById("goBackBtn");
+
+        function showError(message) {
+            errorBox.textContent = message;
+            errorBox.classList.remove("hidden");
+        }
+
+        function hideError() {
+            errorBox.classList.add("hidden");
+        }
+
+        async function safeFetchJson(url, options) {
+            let response;
+
+            try {
+                response = await fetch(url, options);
+            } catch (networkErr) {
+                throw new Error("Could not reach the server. Please check your connection and try again.");
+            }
+
+            const rawText = await response.text();
+
+            let data = null;
+            if (rawText && rawText.trim().length > 0) {
+                try {
+                    data = JSON.parse(rawText);
+                } catch (parseErr) {
+                    data = null;
+                }
+            }
+
+            if (!data) {
+                throw new Error("Server returned an empty or invalid response. Please try again.");
+            }
+
+            if (!response.ok) {
+                throw new Error(data.error || `Server error (status ${response.status}).`);
+            }
+
+            return data;
+        }
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            hideError();
+
+            const formData = new FormData(form);
+            const payload = {};
+            formData.forEach((value, key) => { payload[key] = value; });
+
+            predictBtn.innerHTML = '<span class="loader"></span> Analyzing...';
+            predictBtn.disabled = true;
+
+            try {
+                const data = await safeFetchJson("/predict", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                popupCluster.textContent = "Cluster " + data.cluster;
+                popupLabel.textContent = data.label;
+                popupDescription.textContent = data.description;
+                popupPlot.src = data.plot_image;
+
+                resultModal.classList.remove("hidden");
+
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                predictBtn.innerHTML = "Find Segment 🎯";
+                predictBtn.disabled = false;
+            }
+        });
+
+        newPredictionBtn.addEventListener("click", () => {
+            resultModal.classList.add("hidden");
+        });
+
+        goBackBtn.addEventListener("click", () => {
+            resultModal.classList.add("hidden");
+        });
+    </script>
+
+</body>
+</html>
