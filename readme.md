@@ -17,7 +17,7 @@ Users enter a new customer's annual income and spending score, and the app insta
 
 **🚀 Try it live:**
 
-https://your-render-app.onrender.com
+https://mall-customer-segmentation-system.onrender.com
 
 > _Note: Render free-tier services may take a few seconds to wake up after inactivity._
 
